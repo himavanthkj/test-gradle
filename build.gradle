@@ -1,7 +1,8 @@
-plugins {
-    id 'groovy'
-    id 'java'
-}
+defaultTasks 'clean', 'test', 'aggregate'
+
+apply plugin: 'java'
+apply plugin: 'net.serenity-bdd.aggregator'
+
 
 group 'org.example'
 version '1.0-SNAPSHOT'
@@ -9,13 +10,42 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+buildscript {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("net.serenity-bdd:serenity-gradle-plugin:2.3.12")
+        classpath("net.serenity-bdd:serenity-single-page-report:2.3.12")
+    }
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:3.0.5'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation 'net.serenity-bdd:serenity-core:3.1.15'
+    implementation 'net.serenity-bdd:serenity-junit:3.1.15'
+    implementation 'junit:junit:4.13.2'
+    implementation 'net.serenity-bdd:serenity-screenplay:3.1.15'
+    implementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
 }
 
 test {
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
     useJUnitPlatform()
 }
+
+gradle.startParameter.continueOnFailure = true
+
+serenity {
+    reports = ["single-page-html"]
+}
+
+test.finalizedBy(aggregate)
